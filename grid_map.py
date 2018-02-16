@@ -74,8 +74,18 @@ class GridMap(object):
 
         Returns
         -------
-            tp (str): The type. There are 'occupied', 'free' and 'unknown'.
+            tp (str): The type. There are 'occupied', 'free'， 'unknown' and ‘gray'.
         '''
+        occ = self.occupancy(x, y)
+        if occ < 0.0:
+            tp = 'unknown'
+        elif occ < 0.25:
+            tp = 'free'
+        elif occ > 0.75:
+            tp = 'occupied'
+        else:
+            tp = 'gray'
+
         return tp
 
 
