@@ -1,9 +1,14 @@
 from sortedcontainers import SortedListWithKey
 
+def identity(value):
+    "Identity function."
+    return value
+
 class HeapForSearch(SortedListWithKey):
     ''' SortedListWithKey used for A* planning.
 
     See: http://www.grantjenks.com/docs/sortedcontainers/sortedlistwithkey.html
+         https://www.programcreek.com/python/example/90730/sortedcontainers.SortedListWithKey
 
     Arguments
     ---------
@@ -18,14 +23,14 @@ class HeapForSearch(SortedListWithKey):
 
 
 
-    def __init__(self, iterable=None, key=identity, load=1000):
+    def __init__(self, iterable=None, key=identity):
         ''' Initialization
         '''
         # Member
         pass
 
         # Initialization
-        super(HeapForSearch, self).__init__(iterable=iterable, key=key, load=load)
+        super(HeapForSearch, self).__init__(iterable=iterable, key=key)
 
 
 
@@ -42,7 +47,7 @@ class HeapForSearch(SortedListWithKey):
         -------
             _ (bool): True if the heap has the specific grid at (x, y).
         '''
-        for element in Iter(self):
+        for element in iter(self):
             if x == element.x and y == element.y:
                 return True
 

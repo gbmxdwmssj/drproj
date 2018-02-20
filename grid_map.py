@@ -18,6 +18,9 @@ class GridMap(object):
 
 
     def __init__(self, picture, resolution):
+        # Check
+        assert(resolution > 0.0)
+
         # Member
         self.max_x = picture.shape[1]
         self.max_y = picture.shape[0]
