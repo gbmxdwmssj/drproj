@@ -1,66 +1,118 @@
-from heap_for_search import HeapForSearch
-from node_for_search import NodeForSearch
-from dr_path import DrPath
-from dr_pose import DrPose
+from robot_model import RobotModel
+from grids_info import GridsInfo
 import math
 
 class AStarPlanner(object):
-    ''' Hybrid state A* planner.
+    ''' Traditional A* planner.
 
     See: https://github.com/karlkurzer/path_planner
+
+    Arguments
+    ---------
+        robot_model (RobotModel): The robot model used for planning.
     '''
 
 
-    def __init__(self):
+    def __init__(self, robot_model):
         # Member
-        pass
+        self.path = None
+        self.open_list = None
+        self.close_list = None
+        self.grids_info = None
+        self.robot_model = robot_model
 
 
 
-    def get_path(self, start, goal, grid_map):
-        ''' Get path by A* search.
+    def ready_for_search(self, start_grid, grid_map):
+        # Initialize the path
+        self.path = []
+
+        # Initialize open list and close list.
+        self.open_list = []
+        self.open_list.append(start_grid)
+        self.close_list = []
+
+        # Initialize all grids' information.
+        self.grids_info = GridsInfo(grid_map.max_x, grid_map.max_y)
+        self.grids_info.set_g_cost(start_grid[0], start_grid[1], 0.0)
+
+
+
+    def collision(self, grid, grid_map):
+        return False
+
+
+
+    def get_transition_cost(self, grid, u, grid_map):
+        succ_grid = (grid[0]+u[0], grid[1]+u[1])
+        if self.collision(succ_grid, grid_map):
+            return float('inf')
+        else:
+            return math.sqrt(u[0]**2 + u[1]**2)
+
+
+
+    def get_heuristic(self, grid, goal_grid):
+        dx = goal_grid[0] - grid[0]
+        dy = goal_grid[1] - grid[1]
+        return math.sqrt(dx**2 + dy**2)
+
+
+
+    def trace_back(self, grid):
+        path = [grid]
+        return path
+
+
+
+    def get_path(self, start_grid, goal_grid, grid_map):
+        ''' Get path by traditional A* search.
 
         Arguments
         ---------
-            start (VehicleState): The start vehicle state.
+            start_grid (tuple): The start grid.
 
-            goal (VehicleState): The goal vehicle state.
+            goal_grid (tuple): The goal grid.
 
-            gird_map (GridMap): The gird map.
+            grid_map (GridMap): The gird map.
 
         Returns
         -------
-            path (DrPath): The planned path.
+            _ (DrPath): The planned path.
         '''
-        # Initialize the path
-        path = DrPath()
-
-        # Initialize open list and close list.
-        open_list = HeapForSearch(key=lambda x: x.get_f_cost())
-        close_list = HeapForSearch(key=lambda x: x.get_f_cost())
-
-        # Initialize start node.
-        dx = goal.x - start.x
-        dy = goal.y - start.y
-        start_to_goal = math.sqrt(dx**2 + dy**2)
-        int_x = int(start.x / grid_map.resolution)
-        int_y = int(start.y / grid_map.resolution)
-        start_node = NodeForSearch(0.0, start_to_goal, int_x, int_y)
-        open_list.add(start_node)
+        self.ready_for_search(start_grid, grid_map)
 
         # Search
-        while len(open_list) != 0:
-            node = open_list.pop(0)
-            close_list.add(node)
-            if node.x == goal.x and node.y == goal.y:
-                return path
+        while len(self.open_list) != 0:
+            # Pop the grid with minimum f cost.
+            min_id = self.grids_info.get_min_id(self.open_list)
+            grid = self.open_list.pop(min_id)
 
-            for grid in node.successor_grids:
-                if close_list.has(grid.x, grid.y):
+            # Push it into close list.
+            self.close_list.append(grid)
+
+            # If the goal grid is pushed into close list,
+            # the path is found.
+            if grid[0] == goal_grid[0] and grid[1] == goal_grid[1]:
+                self.path = self.trace_back(grid)
+                return self.path
+
+            # For each possible control.
+            for u in self.robot_model.get_controls(grid, grid_map):
+                succ_grid = (grid[0]+u[0], grid[1]+u[1])
+                if succ_grid in self.close_list:
                     continue
 
-                pass
+                g_cost = self.grids_info.get_g_cost(grid[0], grid[1]) + self.get_transition_cost(grid, u, grid_map)
+                if succ_grid in self.open_list and g_cost >= self.grids_info.get_g_cost(succ_grid[0], succ_grid[1]):
+                    continue
 
-        start_pose = DrPose(start.x, start.y)
-        path.add_before_start(start_pose)
-        return path
+                # Update succ_grid's information.
+                self.grids_info.set_predecessor(succ_grid[0], succ_grid[1], grid)
+                self.grids_info.set_g_cost(succ_grid[0], succ_grid[1], g_cost)
+                self.grids_info.set_h_cost(succ_grid[0], succ_grid[1], self.get_heuristic(succ_grid, goal_grid))
+                if succ_grid not in self.open_list:
+                    self.open_list.append(succ_grid)
+
+        self.path.append(start_grid)
+        return self.path

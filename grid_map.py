@@ -118,5 +118,5 @@ class GridMap(object):
     def print(self):
         ''' Print infomation about the grid map.
         '''
-        print('Grid map information\n--------------------\nmax_x: {}\nmax_y: {}\nresolution: {:.3f}'.format(self.max_x,
+        print('Grid map information\n--------------------\nmax_x: {}\nmax_y: {}\nresolution: {:.3f}\n'.format(self.max_x,
             self.max_y, self.resolution))

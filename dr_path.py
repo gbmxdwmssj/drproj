@@ -14,8 +14,8 @@ class DrPath(object):
 
 
 
-    def add_before_start(self, pose):
-        ''' Add the specific pose before the start pose of the path.
+    def insert_before_start(self, pose):
+        ''' Insert the specific pose before the start pose of the path.
         '''
         self.poses.insert(0, pose)
 

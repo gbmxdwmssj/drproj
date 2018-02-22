@@ -11,26 +11,26 @@ class NodeForSearch(object):
 
         y (int): From down to up.
 
-        vehicle_state (VehicleState): The continuous vehicle state.
+        state: The continuous state.
 
         pred (NodeForSearch): The predecessor of the node.
     '''
 
 
 
-    def __init__(self, g_cost, h_cost, x, y, vehicle_state=None, pred=None):
+    def __init__(self, g_cost, h_cost, x, y, state=None, pred=None):
         # Member
         self.g_cost = g_cost
         self.h_cost = h_cost
         self.x = x
         self.y = y
-        self.vehicle_state = vehicle_state
+        self.state = state
         self.pred = pred
 
         self.successor_grids = []
         for ix in range(x-1, x+2):
             for iy in range(y-1, y+2):
-                if ix < 0 or iy < 0:
+                if ix < 0 or iy < 0: # Max should also be considered.
                     continue
 
                 if ix == x and iy == y:
@@ -66,16 +66,16 @@ class NodeForSearch(object):
 
 
 
-    def set_vehicle_state(self, vehicle_state):
-        self.vehicle_state = vehicle_state
+    def set_state(self, state):
+        self.state = state
 
 
 
-    def get_vehicle_state(self):
-        return self.vehicle_state
+    def get_state(self):
+        return self.state
 
 
 
     def print(self):
-        print('Node information\n----------------\n({}, {})\nf cost: {:.3f}'.format(self.x,
+        print('Node information\n----------------\n({}, {})\nf cost: {:.3f}\n'.format(self.x,
             self.y, self.g_cost + self.h_cost))
