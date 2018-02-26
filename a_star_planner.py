@@ -61,6 +61,11 @@ class AStarPlanner(object):
 
     def trace_back(self, grid):
         path = [grid]
+        pred = self.grids_info.get_predecessor(grid[0], grid[1])
+        while pred is not None:
+            path.insert(0, pred)
+            pred = self.grids_info.get_predecessor(pred[0], pred[1])
+
         return path
 
 

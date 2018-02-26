@@ -6,10 +6,10 @@ from grid_map import GridMap
 robot_model = RobotModel(2.0)
 global_planner = AStarPlanner(robot_model)
 
-start = (1, 1)
+start = (18, 15)
 goal = (10, 10)
 
-empty = mpimg.imread('/home/kai/Pictures/empty.png')
+empty = mpimg.imread('empty.png')
 global_map = GridMap(empty, 1.0)
 global_map.print()
 
