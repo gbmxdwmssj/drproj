@@ -13,8 +13,10 @@ empty = mpimg.imread('empty.png')
 global_map = GridMap(empty, 1.0)
 global_map.print()
 
-path = global_planner.get_path(start, goal, global_map)
+print(global_planner.collision((5,5), global_map))
 
-print(path)
+# path = global_planner.get_path(start, goal, global_map)
+
+# print(path)
 
 print('Finished!')

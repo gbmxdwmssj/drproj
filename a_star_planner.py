@@ -1,6 +1,7 @@
+import math
+import matplotlib.pyplot as plt
 from robot_model import RobotModel
 from grids_info import GridsInfo
-import math
 
 class AStarPlanner(object):
     ''' Traditional A* planner.
@@ -39,6 +40,20 @@ class AStarPlanner(object):
 
 
     def collision(self, grid, grid_map):
+        plt.figure(figsize=(5,5))
+        radius_in_grid = math.ceil(self.robot_model.radius / grid_map.resolution)
+        for dx in range(-radius_in_grid, radius_in_grid+1):
+            for dy in range(-radius_in_grid, radius_in_grid+1):
+                ddis_in_grid = dx**2 + dy**2
+                if ddis_in_grid > radius_in_grid**2:
+                    continue
+
+                # Here is grid within robot model.
+                x = grid[0] + dx
+                y = grid[1] + dy
+                plt.plot(x, y, 'ro', label='point')
+
+        plt.show()
         return False
 
 
