@@ -77,7 +77,7 @@ class GridMap(object):
 
         Returns
         -------
-            tp (str): The type. There are 'occupied', 'free'， 'unknown' and ‘gray'.
+            tp (str): The type. There are 'occupied', 'free', 'unknown' and ‘gray'.
         '''
         occ = self.occupancy(x, y)
         if occ < 0.0:

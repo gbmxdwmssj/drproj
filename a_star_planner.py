@@ -54,6 +54,8 @@ class AStarPlanner(object):
                 # Here is grid within robot model.
                 x = grid[0] + dx
                 y = grid[1] + dy
+                if grid_map.grid_type(x, y) == 'occupied':
+                    return True
 
         return False
 
@@ -125,6 +127,11 @@ class AStarPlanner(object):
                     continue
 
                 g_cost = self.grids_info.get_g_cost(grid[0], grid[1]) + self.get_transition_cost(grid, u, grid_map)
+
+                # If collision.
+                if g_cost == float('inf'):
+                    continue
+
                 if succ_grid in self.open_list and g_cost >= self.grids_info.get_g_cost(succ_grid[0], succ_grid[1]):
                     continue
 
