@@ -1,7 +1,11 @@
+import rospy
 import math
 import matplotlib.pyplot as plt
 from robot_model import RobotModel
 from grids_info import GridsInfo
+from visualization_msgs.msg import Marker
+from geometry_msgs.msg import Point
+from std_msgs.msg import ColorRGBA
 
 class AStarPlanner(object):
     ''' Traditional A* planner.
@@ -40,7 +44,6 @@ class AStarPlanner(object):
 
 
     def collision(self, grid, grid_map):
-        plt.figure(figsize=(5,5))
         radius_in_grid = math.ceil(self.robot_model.radius / grid_map.resolution)
         for dx in range(-radius_in_grid, radius_in_grid+1):
             for dy in range(-radius_in_grid, radius_in_grid+1):
@@ -51,9 +54,7 @@ class AStarPlanner(object):
                 # Here is grid within robot model.
                 x = grid[0] + dx
                 y = grid[1] + dy
-                plt.plot(x, y, 'ro', label='point')
 
-        plt.show()
         return False
 
 
@@ -94,7 +95,7 @@ class AStarPlanner(object):
 
             goal_grid (tuple): The goal grid.
 
-            grid_map (GridMap): The gird map.
+            grid_map (GridMap): The grid map.
 
         Returns
         -------
@@ -136,3 +137,24 @@ class AStarPlanner(object):
 
         self.path.append(start_grid)
         return self.path
+
+
+
+    def show_path(self, topic_name, grid_map):
+        pub = rospy.Publisher(topic_name, Marker, queue_size=10, latch=True)
+
+        # Build message for path.
+        msg = Marker()
+        msg.header.frame_id = '/map'
+        msg.ns = 'a_star_planner'
+        msg.pose.position.x = grid_map.resolution / 2.0 # Offset
+        msg.pose.position.y = grid_map.resolution / 2.0 # Offset
+        msg.type = msg.POINTS
+        msg.action = msg.ADD
+        msg.scale.x = grid_map.resolution # Point width
+        msg.scale.y = grid_map.resolution # Point height
+        for grid in self.path:
+            msg.points.append(Point(x=grid[0], y=grid_map.max_y-1-grid[1]))
+            msg.colors.append(ColorRGBA(g=0.8, a=1.0))
+
+        pub.publish(msg)
