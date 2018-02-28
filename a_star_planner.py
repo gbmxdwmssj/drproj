@@ -161,7 +161,9 @@ class AStarPlanner(object):
         msg.scale.x = grid_map.resolution # Point width
         msg.scale.y = grid_map.resolution # Point height
         for grid in self.path:
-            msg.points.append(Point(x=grid[0], y=grid_map.max_y-1-grid[1]))
+            x = grid[0] * grid_map.resolution
+            y = (grid_map.max_y - 1 - grid[1]) * grid_map.resolution
+            msg.points.append(Point(x=x, y=y))
             msg.colors.append(ColorRGBA(g=0.8, a=1.0))
 
         pub.publish(msg)

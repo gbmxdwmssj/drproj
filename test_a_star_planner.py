@@ -12,7 +12,7 @@ global_planner = AStarPlanner(robot_model)
 start = (2, 2)
 goal = (14, 14)
 empty = mpimg.imread('/home/kai/catkin_ws/src/drproj/empty.png')
-global_map = GridMap(empty, 1.0)
+global_map = GridMap(empty, 0.5)
 global_map.show('rviz_global_grid_map')
 global_map.print()
 
