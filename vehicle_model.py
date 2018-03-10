@@ -1,4 +1,4 @@
-import math
+from math import *
 import yaml
 from vehicle_state import VehicleState
 
@@ -28,10 +28,14 @@ class VehicleModel(object):
             steer (float): degree.
 
             dt (float): s.
+
+        Returns
+        -------
+            s1 (VehicleState): The next vehicle state (m, m, degree).
         '''
-        s1x = s0.x + v * math.cos(math.radians(s0.yaw)) * dt
-        s1y = s0.y + v * math.sin(math.radians(s0.yaw)) * dt
-        s1yaw = s0.yaw + math.degrees(v / wheelbase * math.tan(math.radians(steer)) * dt)
+        s1x = s0.x + v * sin(radians(s0.yaw)) * dt
+        s1y = s0.y + v * cos(radians(s0.yaw)) * dt
+        s1yaw = s0.yaw + degrees(v / self.config['wheelbase'] * tan(radians(steer)) * dt)
 
         while s1yaw >= 180.0:
             s1yaw -= 360.0
