@@ -1,5 +1,6 @@
 import rospy
 from math import *
+from pyquaternion import Quaternion
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
 
@@ -29,7 +30,7 @@ class VirtualVehicle(object):
         center_rear.pose.position.z = -0.5
         center_rear.scale.x = 0.1
         center_rear.scale.y = 0.1
-        center_rear.scale.z = 1.0
+        center_rear.scale.z = 1.2
         center_rear.color.r = 1.0
         center_rear.color.a = 1.0
         
@@ -44,13 +45,32 @@ class VirtualVehicle(object):
         center.pose.position.z = -0.5
         center.scale.x = 0.1
         center.scale.y = 0.1
-        center.scale.z = 1.0
-        center.color.b = 1.0
+        center.scale.z = 1.2
+        center.color.g = 1.0
         center.color.a = 1.0
+
+        # Build marker for vehicle.
+        vehicle = Marker()
+        vehicle.id = 2
+        vehicle.header.frame_id = '/map'
+        vehicle.type = vehicle.CUBE
+        vehicle.action = vehicle.ADD
+        vehicle.pose.position = center.pose.position
+        tmp_qua = Quaternion(axis=[1, 0, 0], angle=radians(self.state.yaw))
+        vehicle.pose.orientation.x = tmp_qua[0]
+        vehicle.pose.orientation.y = tmp_qua[1]
+        vehicle.pose.orientation.z = tmp_qua[2]
+        vehicle.pose.orientation.w = tmp_qua[3]
+        vehicle.scale.x = self.model.config['width']
+        vehicle.scale.y = self.model.config['length']
+        vehicle.scale.z = 1.0
+        vehicle.color.b = 1.0
+        vehicle.color.a = 1.0
 
         # Build message for state.
         msg = MarkerArray()
         msg.markers.append(center_rear)
         msg.markers.append(center)
+        msg.markers.append(vehicle)
 
         pub.publish(msg)

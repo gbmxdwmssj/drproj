@@ -22,3 +22,5 @@ class VehicleState(object):
         self.x = x
         self.y = y
         self.yaw = yaw
+        self.roll = roll
+        self.pitch = pitch
