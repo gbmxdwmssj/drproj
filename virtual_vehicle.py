@@ -20,7 +20,7 @@ class VirtualVehicle(object):
     def cmd_cb(self, data):
         v = data.drive.speed
         steer = data.drive.steering_angle
-        self.step(v, steer, 0.1)
+        self.step(v, steer, self.model.config['dt'])
 
 
 
