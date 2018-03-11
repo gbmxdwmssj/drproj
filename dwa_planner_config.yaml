@@ -1,0 +1,3 @@
+v_resolution: 0.01
+steer_resolution: 0.05
+predict_time: 3.0

@@ -1,5 +1,6 @@
-from math import *
 import yaml
+import numpy as np
+from math import *
 from vehicle_state import VehicleState
 
 class VehicleModel(object):
@@ -33,6 +34,10 @@ class VehicleModel(object):
         -------
             s1 (VehicleState): The next vehicle state (m, m, degree).
         '''
+        # Limit inputs.
+        v = np.clip(v, self.config['velocity_range'][0], self.config['velocity_range'][1])
+        steer = np.clip(steer, self.config['steer_range'][0], self.config['steer_range'][1])
+
         s1x = s0.x + v * sin(radians(s0.yaw)) * dt
         s1y = s0.y + v * cos(radians(s0.yaw)) * dt
         s1yaw = s0.yaw + degrees(v / self.config['wheelbase'] * tan(radians(steer)) * dt)
