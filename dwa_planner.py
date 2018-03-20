@@ -69,7 +69,7 @@ class DWAPlanner(object):
         '''
         traj = []
         traj.append(state)
-        t = 0.0
+        t = dt
         while t < predict_time:
             state = self.model.step(state, v, steer, dt)
             traj.append(state)
@@ -106,10 +106,10 @@ class DWAPlanner(object):
             if type == 'arrow':
                 arrow.scale.x = grid_map.resolution
             else:
-                arrow.scale.x = 0.1
+                arrow.scale.x = 0.05
 
-            arrow.scale.y = 0.1
-            arrow.scale.z = 0.1
+            arrow.scale.y = 0.05
+            arrow.scale.z = 0.05
             arrow.color.g = 1.0
             arrow.color.a = 1.0
 
@@ -128,9 +128,40 @@ class DWAPlanner(object):
         traj_cluster = []
 
         dw = self.get_dynamic_window(state.v, state.steer, dt)
-        for iv in np.arange(dw[0], dw[1], self.config['v_resolution']):
-            for isteer in np.arange(dw[2], dw[3], self.config['steer_resolution']):
+        for iv in np.arange(dw[0], dw[1]+0.0001, self.config['v_resolution']):
+            for isteer in np.arange(dw[2], dw[3]+0.0001, self.config['steer_resolution']):
                 traj = self.get_trajectory(state, iv, isteer, dt, self.config['predict_time'])
                 traj_cluster.append(traj)
 
         return traj_cluster
+
+    def show_trajectory_cluster(self, traj_cluster, topic_name, grid_map):
+        pub = rospy.Publisher(topic_name, MarkerArray, queue_size=10, latch=True)
+
+        id_cnt = 0
+        msg = MarkerArray()
+        for traj in traj_cluster:
+            for state in traj:
+                arrow = Marker()
+                arrow.id = id_cnt
+                arrow.header.frame_id = '/map'
+                arrow.type = arrow.CUBE
+                arrow.action = arrow.ADD
+                arrow.pose.position.x = state.x
+                arrow.pose.position.y = grid_map.max_y * grid_map.resolution - state.y
+                arrow.pose.position.z = 0.0
+                tmp_qua = Quaternion(axis=[1, 0, 0], angle=radians(state.yaw - 90.0))
+                arrow.pose.orientation.x = tmp_qua[0]
+                arrow.pose.orientation.y = tmp_qua[1]
+                arrow.pose.orientation.z = tmp_qua[2]
+                arrow.pose.orientation.w = tmp_qua[3]
+                arrow.scale.x = 0.05
+                arrow.scale.y = 0.05
+                arrow.scale.z = 0.05
+                arrow.color.g = 1.0
+                arrow.color.a = 1.0
+
+                msg.markers.append(arrow)
+                id_cnt += 1
+
+        pub.publish(msg)
