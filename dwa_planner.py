@@ -2,6 +2,7 @@ import rospy
 import yaml
 import numpy as np
 from math import *
+import matplotlib.pyplot as plt
 from pyquaternion import Quaternion
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
@@ -16,6 +17,8 @@ class DWAPlanner(object):
 
         f = open(config_file)
         self.config = yaml.load(f)
+
+        self.small_num = 0.0001
 
 
 
@@ -70,7 +73,7 @@ class DWAPlanner(object):
         traj = []
         traj.append(state)
         t = dt
-        while t < predict_time:
+        while t < predict_time + self.small_num:
             state = self.model.step(state, v, steer, dt)
             traj.append(state)
             t += dt
@@ -128,12 +131,14 @@ class DWAPlanner(object):
         traj_cluster = []
 
         dw = self.get_dynamic_window(state.v, state.steer, dt)
-        for iv in np.arange(dw[0], dw[1]+0.0001, self.config['v_resolution']):
-            for isteer in np.arange(dw[2], dw[3]+0.0001, self.config['steer_resolution']):
+        for iv in np.arange(dw[0], dw[1]+self.small_num, self.config['v_resolution']):
+            for isteer in np.arange(dw[2], dw[3]+self.small_num, self.config['steer_resolution']):
                 traj = self.get_trajectory(state, iv, isteer, dt, self.config['predict_time'])
                 traj_cluster.append(traj)
 
         return traj_cluster
+
+
 
     def show_trajectory_cluster(self, traj_cluster, topic_name, grid_map):
         pub = rospy.Publisher(topic_name, MarkerArray, queue_size=10, latch=True)
@@ -165,3 +170,99 @@ class DWAPlanner(object):
                 id_cnt += 1
 
         pub.publish(msg)
+
+
+
+    def orientation_cost(self, traj, goal):
+        '''
+        Augrments
+        ---------
+            traj (List of VehicleState): The trajectory that needs to be evaluated.
+
+            goal (tuple): The goal point.
+
+        Returns
+        -------
+            _ (float): The orientation cost of the input trajectory.
+        '''
+        x = traj[-1].x
+        y = traj[-1].y
+        yaw = traj[-1].yaw
+
+        dx = goal[0] - x
+        dy = goal[1] - y
+        target_yaw = degrees(atan2(dx, dy))
+
+        delta_yaw = target_yaw - yaw
+        while delta_yaw <= -180.0:
+            delta_yaw += 360.0
+        while delta_yaw > 180.0:
+            delta_yaw -= 360.0
+
+        return fabs(delta_yaw)
+
+
+
+    def velocity_cost(self, traj):
+        return 1.0 / fabs(traj[-1].v)
+
+
+
+    def collision_cost(self, traj, grid_map):
+        for i, state in enumerate(traj):
+            if self.collision(state, grid_map):
+                return True
+
+        return False
+
+
+
+    def half_collision(self, grid, grid_map, radius):
+        radius_in_grid = int(ceil(radius / grid_map.resolution))
+        for dx in range(-radius_in_grid, radius_in_grid+1):
+            for dy in range(-radius_in_grid, radius_in_grid+1):
+                ddis_in_grid = dx**2 + dy**2
+                if ddis_in_grid > radius_in_grid**2:
+                    continue
+
+                # Here is grid within the circle that needs to be checked for collision.
+                x = grid[0] + dx
+                y = grid[1] + dy
+                # plt.plot(x, y, 'ro')
+                if grid_map.grid_type(x, y) == 'occupied':
+                    return True
+
+        return False
+
+
+
+    def collision(self, state, grid_map):
+        x = 0.5 * self.model.config['axis_length']
+        y = 0.25 * self.model.config['length']
+        check_radius = sqrt(x**2 + y**2)
+
+        # Rear point.
+        edge = 0.5 * self.model.config['wheelbase'] - 0.25 * self.model.config['length']
+        rear_x = state.x + edge * sin(radians(state.yaw))
+        rear_y = state.y + edge * cos(radians(state.yaw))
+        grid_x = int(rear_x/grid_map.resolution)
+        grid_y = int(rear_y/grid_map.resolution)
+        grid_x = np.clip(grid_x, 0, grid_map.max_x-1)
+        grid_y = np.clip(grid_y, 0, grid_map.max_y-1)
+        grid = (grid_x, grid_y)
+        if self.half_collision(grid, grid_map, check_radius):
+            return True
+
+        # Front point.
+        edge = 0.5 * self.model.config['wheelbase'] + 0.25 * self.model.config['length']
+        front_x = state.x + edge * sin(radians(state.yaw))
+        front_y = state.y + edge * cos(radians(state.yaw))
+        grid_x = int(front_x/grid_map.resolution)
+        grid_y = int(front_y/grid_map.resolution)
+        grid_x = np.clip(grid_x, 0, grid_map.max_x-1)
+        grid_y = np.clip(grid_y, 0, grid_map.max_y-1)
+        grid = (grid_x, grid_y)
+        if self.half_collision(grid, grid_map, check_radius):
+            return True
+
+        return False
