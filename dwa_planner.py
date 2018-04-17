@@ -22,6 +22,19 @@ class DWAPlanner(object):
 
 
 
+    def normalize_costs(self, costs):
+        sum_cost = sum(costs)
+        if sum_cost == 0:
+            return [0] * len(costs)
+
+        normed_costs = []
+        for cost in costs:
+            normed_costs.append(1.0 * cost / sum_cost)
+
+        return normed_costs
+
+
+
     def get_dynamic_window(self, v, steer, dt):
         '''
         Arguments
@@ -113,7 +126,7 @@ class DWAPlanner(object):
 
             arrow.scale.y = 0.05
             arrow.scale.z = 0.05
-            arrow.color.g = 1.0
+            arrow.color.r = 1.0
             arrow.color.a = 1.0
 
             msg.markers.append(arrow)
@@ -297,3 +310,16 @@ class DWAPlanner(object):
             return True
 
         return False
+
+
+
+    def get_best_trajectory(self, traj_cluster, goal, grid_map):
+        normed_ori_costs = self.normalize_costs(self.orientation_costs(traj_cluster, goal))
+        normed_vel_costs = self.normalize_costs(self.velocity_costs(traj_cluster))
+        normed_col_costs = self.normalize_costs(self.collision_costs(traj_cluster, grid_map))
+
+        weighted_ori_costs = np.multiply(self.config['w_ori'], normed_ori_costs)
+        weighted_vel_costs = np.multiply(self.config['w_vel'], normed_vel_costs)
+        weighted_col_costs = np.multiply(self.config['w_col'], normed_col_costs)
+        normed_total_costs = weighted_ori_costs + weighted_vel_costs + weighted_col_costs
+        return traj_cluster[np.argmax(normed_total_costs)]
