@@ -211,9 +211,13 @@ class DWAPlanner(object):
     def collision_cost(self, traj, grid_map):
         for i, state in enumerate(traj):
             if self.collision(state, grid_map):
-                return True
+                # For simplity, use index as the time stamp.
+                t_col = (i + 1) * self.model.config['dt']
+                return 1.0 / t_col
 
-        return False
+        # No collision, so the time of collision is infinite.
+        t_col = float('inf')
+        return 1.0 / t_col
 
 
 

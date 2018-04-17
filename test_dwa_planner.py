@@ -24,7 +24,7 @@ print('Size fo trajectory: {}'.format(len(traj)))
 dwa_planner.show_trajectory(traj, 'rviz_predicted_trajectory', grid_map, 'cube')
 # print(dwa_planner.orientation_cost(traj, (2.5, 2.0)))
 # print(dwa_planner.velocity_cost(traj))
-print('Collision: {}'.format(dwa_planner.collision_cost(traj, grid_map)))
+print('Collision cost: {}'.format(dwa_planner.collision_cost(traj, grid_map)))
 
 # dwa_planner.collision(vehicle_state, grid_map)
 # plt.show()
