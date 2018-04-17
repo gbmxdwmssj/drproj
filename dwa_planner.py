@@ -203,8 +203,26 @@ class DWAPlanner(object):
 
 
 
+    def orientation_costs(self, traj_cluster, goal):
+        costs = []
+        for traj in traj_cluster:
+            costs.append(self.orientation_cost(traj, goal))
+
+        return costs
+
+
+
     def velocity_cost(self, traj):
         return 1.0 / fabs(traj[-1].v)
+
+
+
+    def velocity_costs(self, traj_cluster):
+        costs = []
+        for traj in traj_cluster:
+            costs.append(self.velocity_cost(traj))
+
+        return costs
 
 
 
@@ -218,6 +236,15 @@ class DWAPlanner(object):
         # No collision, so the time of collision is infinite.
         t_col = float('inf')
         return 1.0 / t_col
+
+
+
+    def collision_costs(self, traj_cluster, grid_map):
+        costs = []
+        for traj in traj_cluster:
+            costs.append(self.collision_cost(traj, grid_map))
+
+        return costs
 
 
 
