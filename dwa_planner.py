@@ -112,7 +112,7 @@ class DWAPlanner(object):
             arrow.action = arrow.ADD
             arrow.pose.position.x = state.x
             arrow.pose.position.y = grid_map.max_y * grid_map.resolution - state.y
-            arrow.pose.position.z = 0.0
+            arrow.pose.position.z = -0.01
             tmp_qua = Quaternion(axis=[1, 0, 0], angle=radians(state.yaw - 90.0))
             arrow.pose.orientation.x = tmp_qua[0]
             arrow.pose.orientation.y = tmp_qua[1]
@@ -322,4 +322,4 @@ class DWAPlanner(object):
         weighted_vel_costs = np.multiply(self.config['w_vel'], normed_vel_costs)
         weighted_col_costs = np.multiply(self.config['w_col'], normed_col_costs)
         normed_total_costs = weighted_ori_costs + weighted_vel_costs + weighted_col_costs
-        return traj_cluster[np.argmax(normed_total_costs)]
+        return traj_cluster[np.argmin(normed_total_costs)]
