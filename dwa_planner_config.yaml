@@ -1,6 +1,7 @@
 v_resolution: 0.2
 steer_resolution: 3.6
 predict_time: 5.0
-w_ori: 1.0
-w_vel: 1.0
-w_col: 1.0
+w_ori: 0.0
+w_dis: 1.0
+w_vel: 0.0
+w_col: 10.0

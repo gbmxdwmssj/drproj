@@ -4,6 +4,7 @@ from pyquaternion import Quaternion
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
 from ackermann_msgs.msg import AckermannDriveStamped
+from std_msgs.msg import Float64MultiArray
 
 class VirtualVehicle(object):
 
@@ -99,3 +100,15 @@ class VirtualVehicle(object):
         msg.markers.append(vehicle)
 
         pub.publish(msg)
+
+
+
+    def pub_vehicle_state(self, topic_name):
+        pub = rospy.Publisher(topic_name, Float64MultiArray, queue_size=10)
+        vehicle_state_msg = Float64MultiArray()
+        vehicle_state_msg.data.append(self.state.x)
+        vehicle_state_msg.data.append(self.state.y)
+        vehicle_state_msg.data.append(self.state.yaw)
+        vehicle_state_msg.data.append(self.state.v)
+        vehicle_state_msg.data.append(self.state.steer)
+        pub.publish(vehicle_state_msg)

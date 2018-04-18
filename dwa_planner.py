@@ -2,10 +2,13 @@ import rospy
 import yaml
 import numpy as np
 from math import *
+from vehicle_state import VehicleState
 import matplotlib.pyplot as plt
 from pyquaternion import Quaternion
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
+from ackermann_msgs.msg import AckermannDriveStamped
+from std_msgs.msg import Float64MultiArray
 
 class DWAPlanner(object):
 
@@ -19,6 +22,18 @@ class DWAPlanner(object):
         self.config = yaml.load(f)
 
         self.small_num = 0.0001
+
+        self.vehicle_state = VehicleState(0.0, 0.0, 0.0)
+        self.vehicle_state_sub = rospy.Subscriber('virtual_vehicle_state', Float64MultiArray, self.vehicle_state_cb)
+
+
+
+    def vehicle_state_cb(self, data):
+        self.vehicle_state.x = data.data[0]
+        self.vehicle_state.y = data.data[1]
+        self.vehicle_state.yaw = data.data[2]
+        self.vehicle_state.v = data.data[3]
+        self.vehicle_state.steer = data.data[4]
 
 
 
@@ -225,8 +240,27 @@ class DWAPlanner(object):
 
 
 
+    def distance_cost(self, traj, goal):
+        dx = goal[0] - traj[-1].x
+        dy = goal[1] - traj[-1].y
+        dis_to_goal = sqrt(dx**2 + dy**2)
+        return dis_to_goal
+
+
+
+    def distance_costs(self, traj_cluster, goal):
+        costs = []
+        for traj in traj_cluster:
+            costs.append(self.distance_cost(traj, goal))
+
+        return costs
+
+
+
     def velocity_cost(self, traj):
-        return 1.0 / fabs(traj[-1].v)
+        abs_v = fabs(traj[-1].v)
+        abs_v = max(abs_v, self.small_num)
+        return 1.0 / abs_v
 
 
 
@@ -315,11 +349,33 @@ class DWAPlanner(object):
 
     def get_best_trajectory(self, traj_cluster, goal, grid_map):
         normed_ori_costs = self.normalize_costs(self.orientation_costs(traj_cluster, goal))
+        normed_dis_costs = self.normalize_costs(self.distance_costs(traj_cluster, goal))
         normed_vel_costs = self.normalize_costs(self.velocity_costs(traj_cluster))
         normed_col_costs = self.normalize_costs(self.collision_costs(traj_cluster, grid_map))
 
         weighted_ori_costs = np.multiply(self.config['w_ori'], normed_ori_costs)
+        weighted_dis_costs = np.multiply(self.config['w_dis'], normed_dis_costs)
         weighted_vel_costs = np.multiply(self.config['w_vel'], normed_vel_costs)
         weighted_col_costs = np.multiply(self.config['w_col'], normed_col_costs)
-        normed_total_costs = weighted_ori_costs + weighted_vel_costs + weighted_col_costs
-        return traj_cluster[np.argmin(normed_total_costs)]
+        normed_total_costs = weighted_ori_costs + weighted_dis_costs + weighted_vel_costs + weighted_col_costs
+        best_traj = traj_cluster[np.argmin(normed_total_costs)]
+        return best_traj
+
+
+
+    def send_cmd(self, topic_name, v, steer):
+        cmd_pub = rospy.Publisher(topic_name, AckermannDriveStamped, queue_size=10)
+        cmd_msg = AckermannDriveStamped()
+        cmd_msg.drive.speed = v
+        cmd_msg.drive.steering_angle = steer
+        cmd_pub.publish(cmd_msg)
+
+
+
+    def run_once(self, goal, grid_map):
+        traj_cluster = self.get_trajectory_cluster(self.vehicle_state, self.model.config['dt'])
+        best_traj = self.get_best_trajectory(traj_cluster, goal, grid_map)
+        self.show_trajectory(best_traj, 'rviz_predicted_trajectory', grid_map, 'cube')
+        v = best_traj[1].v
+        steer = best_traj[1].steer
+        self.send_cmd('vehicle_cmd', v, steer)

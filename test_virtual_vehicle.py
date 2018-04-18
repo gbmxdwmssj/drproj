@@ -23,6 +23,7 @@ virtual_vehicle.show('rviz_virtual_vehicle', grid_map)
 while not rospy.core.is_shutdown():
     time.sleep(0.1)
     virtual_vehicle.show('rviz_virtual_vehicle', grid_map)
+    virtual_vehicle.pub_vehicle_state('virtual_vehicle_state')
 
 # for _ in range(30):
 #     time.sleep(1.0)
