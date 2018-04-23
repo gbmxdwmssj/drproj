@@ -19,5 +19,6 @@ global_map.print()
 path = global_planner.get_path(start, goal, global_map)
 global_planner.show_path('rviz_global_path', global_map)
 print(path)
+global_planner.send_path('global_path')
 
 print('Finished!')

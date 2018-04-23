@@ -5,7 +5,9 @@ from robot_model import RobotModel
 from grids_info import GridsInfo
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Point
+from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import ColorRGBA
+from nav_msgs.msg import Path
 
 class AStarPlanner(object):
     ''' Traditional A* planner.
@@ -165,5 +167,22 @@ class AStarPlanner(object):
             y = (grid_map.max_y - 1 - grid[1]) * grid_map.resolution
             msg.points.append(Point(x=x, y=y))
             msg.colors.append(ColorRGBA(g=0.8, a=1.0))
+
+        pub.publish(msg)
+
+
+
+    def send_path(self, topic_name):
+        ''' Send self.path in the class as a nav_msgs/Path.msg.
+        
+        The unit of x and y is in grid.
+        '''
+        pub = rospy.Publisher(topic_name, Path, queue_size=10, latch=True)
+        msg = Path()
+        for grid in self.path:
+            ps = PoseStamped()
+            ps.pose.position.x = grid[0]
+            ps.pose.position.y = grid[1]
+            msg.poses.append(ps)
 
         pub.publish(msg)
