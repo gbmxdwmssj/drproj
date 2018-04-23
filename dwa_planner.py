@@ -9,6 +9,8 @@ from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
 from ackermann_msgs.msg import AckermannDriveStamped
 from std_msgs.msg import Float64MultiArray
+from nav_msgs.msg import Path
+from geometry_msgs.msg import PoseStamped
 
 class DWAPlanner(object):
 
@@ -24,7 +26,11 @@ class DWAPlanner(object):
         self.small_num = 0.0001
 
         self.vehicle_state = VehicleState(0.0, 0.0, 0.0)
+        self.global_path_grid = Path()
+        self.global_path_meter = Path()
+
         self.vehicle_state_sub = rospy.Subscriber('virtual_vehicle_state', Float64MultiArray, self.vehicle_state_cb)
+        self.global_path_sub = rospy.Subscriber('global_path', Path, self.global_path_cb)
 
 
 
@@ -34,6 +40,14 @@ class DWAPlanner(object):
         self.vehicle_state.yaw = data.data[2]
         self.vehicle_state.v = data.data[3]
         self.vehicle_state.steer = data.data[4]
+
+
+
+    def global_path_cb(self, data):
+        self.global_path_grid = data
+        for ps_grid in data.poses:
+            ps_meter = PoseStamped()
+            ps_meter.pose.position.x = ps_grid.pose.position.x
 
 
 
