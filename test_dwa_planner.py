@@ -61,8 +61,9 @@ dwa_planner = DWAPlanner(vehicle_model, '/home/kai/catkin_ws/src/drproj/dwa_plan
 # steer = best_traj[1].steer
 
 while not rospy.core.is_shutdown():
-    # time.sleep(0.1)
-    dwa_planner.run_once(goal, grid_map)
+    time.sleep(0.5)
+    print(dwa_planner.get_prospect())
+    # dwa_planner.run_once(goal, grid_map)
     # dwa_planner.send_cmd('vehicle_cmd', v, steer)
 
 # print(dwa_planner.global_path_meter.poses)

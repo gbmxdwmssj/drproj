@@ -55,6 +55,31 @@ class DWAPlanner(object):
 
 
 
+    def get_prospect(self):
+        # Check
+        if len(self.global_path_meter.poses) == 0:
+            return (self.vehicle_state.x, self.vehicle_state.y)
+
+        # Match
+        dis_list = []
+        for ps in self.global_path_meter.poses:
+            dx = ps.pose.position.x - self.vehicle_state.x
+            dy = ps.pose.position.y - self.vehicle_state.y
+            dis = sqrt(dx**2 + dy**2)
+            dis_list.append(dis)
+
+        match_id = np.argmin(dis_list)
+
+        # Prospect
+        delta_id = int(self.config['prospect_dis'] / self.global_map_config['resolution'] + 0.5)
+        prospect_id = match_id + delta_id
+        prospect_id = min(prospect_id, len(self.global_path_meter.poses)-1)
+        prospect_x = self.global_path_meter.poses[prospect_id].pose.position.x
+        prospect_y = self.global_path_meter.poses[prospect_id].pose.position.y
+        return (prospect_x, prospect_y)
+
+
+
     def normalize_costs(self, costs):
         sum_cost = sum(costs)
         if sum_cost == 0:
@@ -390,7 +415,7 @@ class DWAPlanner(object):
 
 
 
-    def run_once(self, goal, grid_map):
+    def run_once(self, grid_map):
         traj_cluster = self.get_trajectory_cluster(self.vehicle_state, self.model.config['dt'])
         best_traj = self.get_best_trajectory(traj_cluster, goal, grid_map)
         self.show_trajectory(best_traj, 'rviz_predicted_trajectory', grid_map, 'cube')
