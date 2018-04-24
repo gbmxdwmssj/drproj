@@ -9,7 +9,9 @@ import matplotlib.image as mpimg
 
 rospy.init_node('test_virtual_vehicle', anonymous=True)
 
-vehicle_state = VehicleState(7.0, 6.5, 0.0)
+global_mission = yaml.load(open('/home/kai/catkin_ws/src/drproj/global_mission.yaml'))
+vehicle_state = VehicleState(global_mission['start'][0], global_mission['start'][1], global_mission['start'][2])
+
 vehicle_model = VehicleModel('/home/kai/catkin_ws/src/drproj/vehicle_config.yaml')
 virtual_vehicle = VirtualVehicle(vehicle_state, vehicle_model, 'vehicle_cmd')
 
