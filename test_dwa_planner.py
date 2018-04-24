@@ -65,4 +65,5 @@ while not rospy.core.is_shutdown():
     dwa_planner.run_once(goal, grid_map)
     # dwa_planner.send_cmd('vehicle_cmd', v, steer)
 
+# print(dwa_planner.global_path_meter.poses)
 print('Finished!')

@@ -22,6 +22,8 @@ class DWAPlanner(object):
 
         f = open(config_file)
         self.config = yaml.load(f)
+        f = open('/home/kai/catkin_ws/src/drproj/empty.yaml')
+        self.global_map_config = yaml.load(f)
 
         self.small_num = 0.0001
 
@@ -47,7 +49,9 @@ class DWAPlanner(object):
         self.global_path_grid = data
         for ps_grid in data.poses:
             ps_meter = PoseStamped()
-            ps_meter.pose.position.x = ps_grid.pose.position.x
+            ps_meter.pose.position.x = ps_grid.pose.position.x * self.global_map_config['resolution']
+            ps_meter.pose.position.y = ps_grid.pose.position.y * self.global_map_config['resolution']
+            self.global_path_meter.poses.append(ps_meter)
 
 
 
