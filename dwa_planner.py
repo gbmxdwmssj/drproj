@@ -416,6 +416,7 @@ class DWAPlanner(object):
 
 
     def run_once(self, grid_map):
+        goal = self.get_prospect()
         traj_cluster = self.get_trajectory_cluster(self.vehicle_state, self.model.config['dt'])
         best_traj = self.get_best_trajectory(traj_cluster, goal, grid_map)
         self.show_trajectory(best_traj, 'rviz_predicted_trajectory', grid_map, 'cube')

@@ -7,7 +7,7 @@ from vehicle_state import VehicleState
 from grid_map import GridMap
 import matplotlib.image as mpimg
 
-goal = (9.0, 9.0)
+# goal = (9.0, 9.0)
 
 rospy.init_node('test_dwa_planner', anonymous=True)
 
@@ -61,9 +61,9 @@ dwa_planner = DWAPlanner(vehicle_model, '/home/kai/catkin_ws/src/drproj/dwa_plan
 # steer = best_traj[1].steer
 
 while not rospy.core.is_shutdown():
-    time.sleep(0.5)
-    print(dwa_planner.get_prospect())
-    # dwa_planner.run_once(goal, grid_map)
+    # time.sleep(0.5)
+    # print(dwa_planner.get_prospect())
+    dwa_planner.run_once(grid_map)
     # dwa_planner.send_cmd('vehicle_cmd', v, steer)
 
 # print(dwa_planner.global_path_meter.poses)
