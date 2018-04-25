@@ -9,10 +9,11 @@ class MovingObs(object):
         f = open(config_file)
         self.config = yaml.load(f)
         self.resolution = 0.1 # m
+        # self.
 
 
 
-    def interpolate(self, start, end):
+    def interpolate_two_pts(self, start, end):
         '''
         Arguments
         ---------
@@ -38,3 +39,20 @@ class MovingObs(object):
             pt[1] += y_resolution
 
         return pts
+
+
+
+    def interpolate_multi_pts(self, multi_pts):
+        pts = []
+        for i in range(len(multi_pts)-1):
+            start = multi_pts[i]
+            end = multi_pts[i+1]
+            pts += self.interpolate_two_pts(start, end)
+
+        return pts
+
+
+
+    def refine(self):
+        for key in self.config:
+            print(self.config[key])
