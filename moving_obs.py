@@ -1,15 +1,40 @@
 import yaml
 import numpy as np
+import matplotlib.image as mpimg
+from grid_map import GridMap
+
 class MovingObs(object):
 
 
 
-    def __init__(self, config_file):
+    def __init__(self, config_file, map_config_file, map_file):
         # Member
         f = open(config_file)
         self.config = yaml.load(f)
-        self.resolution = 0.1 # m
-        # self.
+
+        f = open(map_config_file)
+        self.map_config = yaml.load(f)
+
+        map_array = mpimg.imread(map_file)
+        self.grid_map = GridMap(map_array, self.map_config['resolution'])
+        self.grid_map.print()
+
+        self.resolution = 0.5 # m
+        self.trajs = []
+        self.last_id = None
+        self.cur_id = 0
+
+        # Refine
+        self.refine()
+        
+        # Spawn obstacles into the map.
+        for traj in self.trajs:
+            x = int(traj[self.cur_id][0] / self.grid_map.resolution + 0.5)
+            y = int(traj[self.cur_id][1] / self.grid_map.resolution + 0.5)
+            self.grid_map.set_grid(x, y, 1.0)
+
+        self.last_id = self.cur_id
+        self.cur_id += 1
 
 
 
@@ -54,5 +79,23 @@ class MovingObs(object):
 
 
     def refine(self):
+        self.trajs = []
         for key in self.config:
-            print(self.config[key])
+            self.trajs.append(self.interpolate_multi_pts(self.config[key]))
+
+
+
+    def run_once(self):
+        for traj in self.trajs:
+            i = min(self.last_id, len(traj)-1)
+            x = int(traj[i][0] / self.grid_map.resolution + 0.5)
+            y = int(traj[i][1] / self.grid_map.resolution + 0.5)
+            self.grid_map.set_grid(x, y, 0.0)
+
+            i = min(self.cur_id, len(traj)-1)
+            x = int(traj[i][0] / self.grid_map.resolution + 0.5)
+            y = int(traj[i][1] / self.grid_map.resolution + 0.5)
+            self.grid_map.set_grid(x, y, 1.0)
+
+        self.last_id = self.cur_id
+        self.cur_id += 1

@@ -120,3 +120,10 @@ class GridMap(object):
         '''
         print('Grid map information\n--------------------\nmax_x: {}\nmax_y: {}\nresolution: {:.3f}\n'.format(self.max_x,
             self.max_y, self.resolution))
+
+
+
+    def set_grid(self, x, y, occ):
+        x = np.clip(x, 0, self.max_x-1)
+        y = np.clip(y, 0, self.max_y-1)
+        self.occupancies[x][y] = occ
