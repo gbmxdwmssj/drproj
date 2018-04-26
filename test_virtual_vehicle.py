@@ -5,6 +5,7 @@ from vehicle_state import VehicleState
 from vehicle_model import VehicleModel
 from virtual_vehicle import VirtualVehicle
 from grid_map import GridMap
+from moving_obs import MovingObs
 import matplotlib.image as mpimg
 
 rospy.init_node('test_virtual_vehicle', anonymous=True)
@@ -15,21 +16,30 @@ vehicle_state = VehicleState(global_mission['start'][0], global_mission['start']
 vehicle_model = VehicleModel('/home/kai/catkin_ws/src/drproj/vehicle_config.yaml')
 virtual_vehicle = VirtualVehicle(vehicle_state, vehicle_model, 'vehicle_cmd')
 
-empty = mpimg.imread('/home/kai/catkin_ws/src/drproj/empty.png')
-grid_map = GridMap(empty, 0.5)
-grid_map.print()
-grid_map.show('rviz_global_grid_map')
+# empty = mpimg.imread('/home/kai/catkin_ws/src/drproj/empty.png')
+# grid_map = GridMap(empty, 0.5)
+# grid_map.print()
+# grid_map.show('rviz_global_grid_map')
 
-virtual_vehicle.show('rviz_virtual_vehicle', grid_map)
+moving_obs = MovingObs('/home/kai/catkin_ws/src/drproj/moving_obs.yaml',
+                    '/home/kai/catkin_ws/src/drproj/empty.yaml',
+                    '/home/kai/catkin_ws/src/drproj/empty.png')
+
+virtual_vehicle.show('rviz_virtual_vehicle', moving_obs.grid_map)
+moving_obs.grid_map.show('rviz_global_grid_map')
+rospy.set_param('start_signal', False)
+start_signal = rospy.get_param('/start_signal')
+while not start_signal and not rospy.core.is_shutdown():
+    time.sleep(0.1)
+    start_signal = rospy.get_param('/start_signal')
+    virtual_vehicle.show('rviz_virtual_vehicle', moving_obs.grid_map)
+    virtual_vehicle.pub_vehicle_state('virtual_vehicle_state')
 
 while not rospy.core.is_shutdown():
     time.sleep(0.1)
-    virtual_vehicle.show('rviz_virtual_vehicle', grid_map)
+    virtual_vehicle.show('rviz_virtual_vehicle', moving_obs.grid_map)
     virtual_vehicle.pub_vehicle_state('virtual_vehicle_state')
-
-# for _ in range(30):
-#     time.sleep(1.0)
-#     virtual_vehicle.step(1.0, 30.0, 0.1)
-#     virtual_vehicle.show('rviz_virtual_vehicle', grid_map)
+    moving_obs.run_once()
+    moving_obs.grid_map.show('rviz_global_grid_map')
 
 print('Finished!')

@@ -12,9 +12,7 @@ import matplotlib.image as mpimg
 rospy.init_node('test_dwa_planner', anonymous=True)
 
 empty = mpimg.imread('/home/kai/catkin_ws/src/drproj/empty.png')
-grid_map = GridMap(empty, 0.5)
-grid_map.print()
-grid_map.show('rviz_global_grid_map')
+static_grid_map = GridMap(empty, 0.5)
 
 vehicle_model = VehicleModel('/home/kai/catkin_ws/src/drproj/vehicle_config.yaml')
 dwa_planner = DWAPlanner(vehicle_model, '/home/kai/catkin_ws/src/drproj/dwa_planner_config.yaml')
@@ -60,10 +58,15 @@ dwa_planner = DWAPlanner(vehicle_model, '/home/kai/catkin_ws/src/drproj/dwa_plan
 # v = best_traj[1].v
 # steer = best_traj[1].steer
 
+start_signal = rospy.get_param('/start_signal')
+while not start_signal and not rospy.core.is_shutdown():
+    time.sleep(0.1)
+    start_signal = rospy.get_param('/start_signal')
+
 while not rospy.core.is_shutdown():
     # time.sleep(0.5)
     # print(dwa_planner.get_prospect())
-    dwa_planner.run_once(grid_map)
+    dwa_planner.run_once(static_grid_map)
     # dwa_planner.send_cmd('vehicle_cmd', v, steer)
 
 # print(dwa_planner.global_path_meter.poses)

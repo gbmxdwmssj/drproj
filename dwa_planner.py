@@ -8,9 +8,11 @@ from pyquaternion import Quaternion
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
 from ackermann_msgs.msg import AckermannDriveStamped
+from std_msgs.msg import Int64
 from std_msgs.msg import Float64MultiArray
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
+from moving_obs import MovingObs
 
 class DWAPlanner(object):
 
@@ -24,15 +26,20 @@ class DWAPlanner(object):
         self.config = yaml.load(f)
         f = open('/home/kai/catkin_ws/src/drproj/empty.yaml')
         self.global_map_config = yaml.load(f)
+        self.moving_obs = MovingObs('/home/kai/catkin_ws/src/drproj/moving_obs.yaml',
+                            '/home/kai/catkin_ws/src/drproj/empty.yaml',
+                            '/home/kai/catkin_ws/src/drproj/empty.png', is_clear=True, is_pub_id=False)
 
         self.small_num = 0.0001
 
         self.vehicle_state = VehicleState(0.0, 0.0, 0.0)
         self.global_path_grid = Path()
         self.global_path_meter = Path()
+        self.mov_id = 0
 
         self.vehicle_state_sub = rospy.Subscriber('virtual_vehicle_state', Float64MultiArray, self.vehicle_state_cb)
         self.global_path_sub = rospy.Subscriber('global_path', Path, self.global_path_cb)
+        self.mov_id_sub = rospy.Subscriber('cur_moving_obs_id', Int64, self.mov_id_cb)
 
 
 
@@ -52,6 +59,11 @@ class DWAPlanner(object):
             ps_meter.pose.position.x = ps_grid.pose.position.x * self.global_map_config['resolution']
             ps_meter.pose.position.y = ps_grid.pose.position.y * self.global_map_config['resolution']
             self.global_path_meter.poses.append(ps_meter)
+
+
+
+    def mov_id_cb(self, data):
+        self.mov_id = data.data
 
 
 
@@ -387,6 +399,21 @@ class DWAPlanner(object):
             return True
 
         return False
+
+
+
+    def moving_collision_cost(self, traj):
+        self.moving_obs.cur_id = self.mov_id
+        for i, state in enumerate(traj):
+            self.moving_obs.run_once()
+            if self.collision(state, self.moving_obs.grid_map):
+                # For simplity, use index as the time stamp.
+                t_col = (i + 1) * self.model.config['dt']
+                return 1.0 / t_col
+
+        # No collision, so the time of collision is infinite.
+        t_col = float('inf')
+        return 1.0 / t_col
 
 
 

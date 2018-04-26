@@ -1,5 +1,6 @@
 import rospy
 import yaml
+import time
 import numpy as np
 from a_star_planner import AStarPlanner
 from robot_model import RobotModel
@@ -29,5 +30,9 @@ path = global_planner.get_path(start, goal, global_map)
 global_planner.show_path('rviz_global_path', global_map)
 print(path)
 global_planner.send_path('global_path')
+
+while not rospy.core.is_shutdown():
+    time.sleep(1.0)
+    global_planner.show_path('rviz_global_path', global_map)
 
 print('Finished!')
