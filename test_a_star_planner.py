@@ -1,6 +1,7 @@
 import rospy
 import yaml
 import time
+from math import *
 import numpy as np
 from a_star_planner import AStarPlanner
 from robot_model import RobotModel
@@ -9,7 +10,11 @@ from grid_map import GridMap
 
 rospy.init_node('test_a_star_planner', anonymous=True)
 
-robot_model = RobotModel(2.0)
+vehicle_config = yaml.load(open('/home/kai/catkin_ws/src/drproj/vehicle_config.yaml'))
+half_length = 0.5 * vehicle_config['length']
+half_width = 0.5 * vehicle_config['width']
+radius = sqrt(half_length**2 + half_width**2)
+robot_model = RobotModel(radius)
 global_planner = AStarPlanner(robot_model)
 
 empty = mpimg.imread('/home/kai/catkin_ws/src/drproj/empty.png')

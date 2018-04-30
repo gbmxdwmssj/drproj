@@ -417,17 +417,29 @@ class DWAPlanner(object):
 
 
 
+    def moving_collision_costs(self, traj_cluster):
+        costs = []
+        for traj in traj_cluster:
+            costs.append(self.moving_collision_cost(traj))
+
+        return costs
+
+
+
     def get_best_trajectory(self, traj_cluster, goal, grid_map):
         normed_ori_costs = self.normalize_costs(self.orientation_costs(traj_cluster, goal))
         normed_dis_costs = self.normalize_costs(self.distance_costs(traj_cluster, goal))
         normed_vel_costs = self.normalize_costs(self.velocity_costs(traj_cluster))
         normed_col_costs = self.normalize_costs(self.collision_costs(traj_cluster, grid_map))
+        normed_mov_costs = self.normalize_costs(self.moving_collision_costs(traj_cluster))
 
         weighted_ori_costs = np.multiply(self.config['w_ori'], normed_ori_costs)
         weighted_dis_costs = np.multiply(self.config['w_dis'], normed_dis_costs)
         weighted_vel_costs = np.multiply(self.config['w_vel'], normed_vel_costs)
         weighted_col_costs = np.multiply(self.config['w_col'], normed_col_costs)
-        normed_total_costs = weighted_ori_costs + weighted_dis_costs + weighted_vel_costs + weighted_col_costs
+        weighted_mov_costs = np.multiply(self.config['w_mov'], normed_mov_costs)
+
+        normed_total_costs = weighted_ori_costs + weighted_dis_costs + weighted_vel_costs + weighted_col_costs + weighted_mov_costs
         best_traj = traj_cluster[np.argmin(normed_total_costs)]
         return best_traj
 

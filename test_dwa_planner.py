@@ -58,23 +58,22 @@ dwa_planner = DWAPlanner(vehicle_model, '/home/kai/catkin_ws/src/drproj/dwa_plan
 # v = best_traj[1].v
 # steer = best_traj[1].steer
 
-# start_signal = rospy.get_param('/start_signal')
-# while not start_signal and not rospy.core.is_shutdown():
-#     time.sleep(0.1)
-#     start_signal = rospy.get_param('/start_signal')
+start_signal = rospy.get_param('/start_signal')
+while not start_signal and not rospy.core.is_shutdown():
+    time.sleep(0.1)
+    start_signal = rospy.get_param('/start_signal')
 
-# while not rospy.core.is_shutdown():
-    # time.sleep(0.5)
-    # print(dwa_planner.get_prospect())
-    # dwa_planner.run_once(static_grid_map)
-    # dwa_planner.send_cmd('vehicle_cmd', v, steer)
+r = rospy.Rate(10) # 10hz
+while not rospy.core.is_shutdown():
+    r.sleep()
+    dwa_planner.run_once(static_grid_map)
 
 # print(dwa_planner.global_path_meter.poses)
 
-vehicle_state = VehicleState(8.0, 0.0, 0.0)
-traj = dwa_planner.get_trajectory(vehicle_state, 2.0, 0.0, vehicle_model.config['dt'], dwa_planner.config['predict_time'])
-print('Size fo trajectory: {}'.format(len(traj)))
-dwa_planner.show_trajectory(traj, 'rviz_predicted_trajectory', static_grid_map, 'cube')
-print('Moving collision cost: {}'.format(dwa_planner.moving_collision_cost(traj)))
+# vehicle_state = VehicleState(8.0, 0.0, 0.0)
+# traj = dwa_planner.get_trajectory(vehicle_state, 2.0, 0.0, vehicle_model.config['dt'], dwa_planner.config['predict_time'])
+# print('Size fo trajectory: {}'.format(len(traj)))
+# dwa_planner.show_trajectory(traj, 'rviz_predicted_trajectory', static_grid_map, 'cube')
+# print('Moving collision cost: {}'.format(dwa_planner.moving_collision_cost(traj)))
 
 print('Finished!')
