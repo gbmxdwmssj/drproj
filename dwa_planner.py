@@ -378,10 +378,10 @@ class DWAPlanner(object):
         edge = 0.5 * self.model.config['wheelbase'] - 0.25 * self.model.config['length']
         rear_x = state.x + edge * sin(radians(state.yaw))
         rear_y = state.y + edge * cos(radians(state.yaw))
-        grid_x = int(rear_x/grid_map.resolution)
-        grid_y = int(rear_y/grid_map.resolution)
-        grid_x = np.clip(grid_x, 0, grid_map.max_x-1)
-        grid_y = np.clip(grid_y, 0, grid_map.max_y-1)
+        grid_x = int(rear_x / grid_map.resolution + 0.5)
+        grid_y = int(rear_y / grid_map.resolution + 0.5)
+        # grid_x = np.clip(grid_x, 0, grid_map.max_x-1)
+        # grid_y = np.clip(grid_y, 0, grid_map.max_y-1)
         grid = (grid_x, grid_y)
         if self.half_collision(grid, grid_map, check_radius):
             return True
@@ -390,10 +390,10 @@ class DWAPlanner(object):
         edge = 0.5 * self.model.config['wheelbase'] + 0.25 * self.model.config['length']
         front_x = state.x + edge * sin(radians(state.yaw))
         front_y = state.y + edge * cos(radians(state.yaw))
-        grid_x = int(front_x/grid_map.resolution)
-        grid_y = int(front_y/grid_map.resolution)
-        grid_x = np.clip(grid_x, 0, grid_map.max_x-1)
-        grid_y = np.clip(grid_y, 0, grid_map.max_y-1)
+        grid_x = int(front_x / grid_map.resolution + 0.5)
+        grid_y = int(front_y / grid_map.resolution + 0.5)
+        # grid_x = np.clip(grid_x, 0, grid_map.max_x-1)
+        # grid_y = np.clip(grid_y, 0, grid_map.max_y-1)
         grid = (grid_x, grid_y)
         if self.half_collision(grid, grid_map, check_radius):
             return True

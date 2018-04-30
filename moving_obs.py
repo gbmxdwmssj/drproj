@@ -1,5 +1,6 @@
 import rospy
 import yaml
+from math import *
 import numpy as np
 import matplotlib.image as mpimg
 from grid_map import GridMap
@@ -9,7 +10,7 @@ class MovingObs(object):
 
 
 
-    def __init__(self, config_file, map_config_file, map_file, is_clear=False, is_pub_id=True):
+    def __init__(self, config_file, map_config_file, map_file, is_clear=False, is_pub_id=True, resolution=0.5):
         # Member
         f = open(config_file)
         self.config = yaml.load(f)
@@ -21,7 +22,7 @@ class MovingObs(object):
         self.grid_map = GridMap(map_array, self.map_config['resolution'])
         self.grid_map.print()
 
-        self.resolution = 0.1 # m
+        self.resolution = resolution # m
         self.trajs = []
         self.last_id = None
         self.cur_id = 0
@@ -62,8 +63,8 @@ class MovingObs(object):
         if abs(dx) + abs(dy) == 0:
             return []
 
-        x_resolution = self.resolution * dx / (abs(dx) + abs(dy))
-        y_resolution = self.resolution * dy / (abs(dx) + abs(dy))
+        x_resolution = self.resolution * dx / sqrt(dx**2 + dy**2)
+        y_resolution = self.resolution * dy / sqrt(dx**2 + dy**2)
         max_dis = np.linalg.norm(np.subtract(end, start))
         pts = []
 

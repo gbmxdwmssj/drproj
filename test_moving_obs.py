@@ -29,14 +29,14 @@ rospy.init_node('test_moving_obs', anonymous=True)
 
 
 
-# moving_obs.refine()
-# print(len(moving_obs.trajs))
-# for traj in moving_obs.trajs:
-#     traj = np.array(traj)
-#     print(len(traj))
-#     plt.plot(traj[:,0], traj[:,1], 'ro')
+moving_obs.refine()
+print(len(moving_obs.trajs))
+for traj in moving_obs.trajs:
+    traj = np.array(traj)
+    print(len(traj))
+    plt.plot(traj[:,0], traj[:,1], 'ro')
 
-# plt.show()
+plt.show()
 
 
 
@@ -47,11 +47,11 @@ rospy.init_node('test_moving_obs', anonymous=True)
 
 
 
-moving_obs.grid_map.show('rviz_global_grid_map')
-while not rospy.core.is_shutdown():
-    time.sleep(0.5)
-    moving_obs.run_once()
-    moving_obs.grid_map.show('rviz_global_grid_map')
+# moving_obs.grid_map.show('rviz_global_grid_map')
+# while not rospy.core.is_shutdown():
+#     time.sleep(0.5)
+#     moving_obs.run_once()
+#     moving_obs.grid_map.show('rviz_global_grid_map')
 
 
 
