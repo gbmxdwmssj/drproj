@@ -66,7 +66,8 @@ while not start_signal and not rospy.core.is_shutdown():
 r = rospy.Rate(10) # 10hz
 while not rospy.core.is_shutdown():
     r.sleep()
-    dwa_planner.run_once(static_grid_map)
+    # dwa_planner.run_once(static_grid_map)
+    dwa_planner.move_once(static_grid_map)
 
 # print(dwa_planner.global_path_meter.poses)
 

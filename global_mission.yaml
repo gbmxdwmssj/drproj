@@ -1,2 +1,2 @@
-start: [8.0, 0.0, 0.0] # [m, m, degree]
-goal: [8.0, 7.0] # [m, m]
+start: [8.0, 7.0, 0.0] # [m, m, degree]
+goal: [7.0, 0.0] # [m, m]

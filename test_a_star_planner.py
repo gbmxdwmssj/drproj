@@ -17,9 +17,9 @@ radius = sqrt(half_length**2 + half_width**2)
 robot_model = RobotModel(radius)
 global_planner = AStarPlanner(robot_model)
 
-empty = mpimg.imread('/home/kai/catkin_ws/src/drproj/empty.png')
-global_map_config = yaml.load(open('/home/kai/catkin_ws/src/drproj/empty.yaml'))
-global_map = GridMap(empty, global_map_config['resolution'])
+free = mpimg.imread('/home/kai/catkin_ws/src/drproj/free.png')
+global_map_config = yaml.load(open('/home/kai/catkin_ws/src/drproj/free.yaml'))
+global_map = GridMap(free, global_map_config['resolution'])
 global_map.show('rviz_global_grid_map')
 global_map.print()
 

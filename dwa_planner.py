@@ -13,6 +13,7 @@ from std_msgs.msg import Float64MultiArray
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
 from moving_obs import MovingObs
+from drproj.srv import *
 
 class DWAPlanner(object):
 
@@ -40,6 +41,16 @@ class DWAPlanner(object):
         self.vehicle_state_sub = rospy.Subscriber('virtual_vehicle_state', Float64MultiArray, self.vehicle_state_cb)
         self.global_path_sub = rospy.Subscriber('global_path', Path, self.global_path_cb)
         self.mov_id_sub = rospy.Subscriber('cur_moving_obs_id', Int64, self.mov_id_cb)
+
+        self.move_vehicle = rospy.ServiceProxy('move_vehicle', MoveVehicle)
+
+        # Get the initial vehicle state
+        res = self.move_vehicle(0.0, 0.0)
+        self.vehicle_state.x = res.x
+        self.vehicle_state.y = res.y
+        self.vehicle_state.yaw = res.yaw
+        self.vehicle_state.v = res.v
+        self.vehicle_state.steer = res.steer
 
 
 
@@ -462,3 +473,14 @@ class DWAPlanner(object):
         v = best_traj[1].v
         steer = best_traj[1].steer
         self.send_cmd('vehicle_cmd', v, steer)
+
+
+
+    def move_once(self, grid_map):
+        goal = self.get_prospect()
+        traj_cluster = self.get_trajectory_cluster(self.vehicle_state, self.model.config['dt'])
+        best_traj = self.get_best_trajectory(traj_cluster, goal, grid_map)
+        self.show_trajectory(best_traj, 'rviz_predicted_trajectory', grid_map, 'cube')
+        v = best_traj[1].v
+        steer = best_traj[1].steer
+        self.move_vehicle(v, steer)

@@ -5,16 +5,18 @@ from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
 from ackermann_msgs.msg import AckermannDriveStamped
 from std_msgs.msg import Float64MultiArray
+from drproj.srv import *
 
 class VirtualVehicle(object):
 
 
 
-    def __init__(self, state, model, cmd_topic_name):
+    def __init__(self, state, model, cmd_topic_name, cmd_srv_name):
         # Member
         self.state = state
         self.model = model
         self.cmd_sub = rospy.Subscriber(cmd_topic_name, AckermannDriveStamped, self.cmd_cb)
+        self.cmd_srv = rospy.Service(cmd_srv_name, MoveVehicle, self.move_vehicle)
 
 
 
@@ -22,6 +24,13 @@ class VirtualVehicle(object):
         v = data.drive.speed
         steer = data.drive.steering_angle
         self.step(v, steer, self.model.config['dt'])
+
+
+
+    def move_vehicle(self, req):
+        self.step(req.v, req.steer, self.model.config['dt'])
+        return MoveVehicleResponse(x=self.state.x, y=self.state.y, yaw=self.state.yaw,
+                                v=req.v, steer=req.steer)
 
 
 

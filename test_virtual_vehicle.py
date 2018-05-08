@@ -14,16 +14,16 @@ global_mission = yaml.load(open('/home/kai/catkin_ws/src/drproj/global_mission.y
 vehicle_state = VehicleState(global_mission['start'][0], global_mission['start'][1], global_mission['start'][2])
 
 vehicle_model = VehicleModel('/home/kai/catkin_ws/src/drproj/vehicle_config.yaml')
-virtual_vehicle = VirtualVehicle(vehicle_state, vehicle_model, 'vehicle_cmd')
+virtual_vehicle = VirtualVehicle(vehicle_state, vehicle_model, 'vehicle_cmd', 'move_vehicle')
 
-# empty = mpimg.imread('/home/kai/catkin_ws/src/drproj/empty.png')
-# grid_map = GridMap(empty, 0.5)
+# free = mpimg.imread('/home/kai/catkin_ws/src/drproj/free.png')
+# grid_map = GridMap(free, 0.5)
 # grid_map.print()
 # grid_map.show('rviz_global_grid_map')
 
 moving_obs = MovingObs('/home/kai/catkin_ws/src/drproj/moving_obs.yaml',
-                    '/home/kai/catkin_ws/src/drproj/empty.yaml',
-                    '/home/kai/catkin_ws/src/drproj/empty.png')
+                    '/home/kai/catkin_ws/src/drproj/free.yaml',
+                    '/home/kai/catkin_ws/src/drproj/free.png')
 
 virtual_vehicle.show('rviz_virtual_vehicle', moving_obs.grid_map)
 moving_obs.grid_map.show('rviz_global_grid_map')
