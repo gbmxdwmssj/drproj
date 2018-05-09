@@ -14,22 +14,25 @@ from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
 from moving_obs import MovingObs
 from drproj.srv import *
+from std_msgs.msg import Empty
 
 class DWAPlanner(object):
 
 
 
-    def __init__(self, model, config_file):
+    def __init__(self, model, config_file, grid_map):
         # Member
+        self.print_cnt = 0
         self.model = model
+        self.grid_map = grid_map
 
         f = open(config_file)
         self.config = yaml.load(f)
-        f = open('/home/kai/catkin_ws/src/drproj/empty.yaml')
+        f = open('/home/kai/catkin_ws/src/drproj/free.yaml')
         self.global_map_config = yaml.load(f)
         self.moving_obs = MovingObs('/home/kai/catkin_ws/src/drproj/moving_obs.yaml',
-                            '/home/kai/catkin_ws/src/drproj/empty.yaml',
-                            '/home/kai/catkin_ws/src/drproj/empty.png', is_clear=True, is_pub_id=False)
+                            '/home/kai/catkin_ws/src/drproj/free.yaml',
+                            '/home/kai/catkin_ws/src/drproj/free.png', is_clear=True, is_pub_id=False)
 
         self.small_num = 0.0001
 
@@ -38,9 +41,11 @@ class DWAPlanner(object):
         self.global_path_meter = Path()
         self.mov_id = 0
 
-        self.vehicle_state_sub = rospy.Subscriber('virtual_vehicle_state', Float64MultiArray, self.vehicle_state_cb)
+        # self.vehicle_state_sub = rospy.Subscriber('virtual_vehicle_state', Float64MultiArray, self.vehicle_state_cb)
         self.global_path_sub = rospy.Subscriber('global_path', Path, self.global_path_cb)
         self.mov_id_sub = rospy.Subscriber('cur_moving_obs_id', Int64, self.mov_id_cb)
+        self.reset_srv = rospy.Service('reset_planner', ResetPlanner, self.reset_planner)
+        self.reset_vehicle = rospy.ServiceProxy('reset_vehicle', ResetVehicle)
 
         self.move_vehicle = rospy.ServiceProxy('move_vehicle', MoveVehicle)
 
@@ -51,6 +56,8 @@ class DWAPlanner(object):
         self.vehicle_state.yaw = res.yaw
         self.vehicle_state.v = res.v
         self.vehicle_state.steer = res.steer
+
+        self.step_srv = rospy.Service('step_once', DrStep, self.step_once)
 
 
 
@@ -75,6 +82,29 @@ class DWAPlanner(object):
 
     def mov_id_cb(self, data):
         self.mov_id = data.data
+
+
+
+    def reset_planner(self, req):
+        self.reset_vehicle(state=req.state)
+        self.vehicle_state.x = req.state[0]
+        self.vehicle_state.y = req.state[1]
+        self.vehicle_state.yaw = req.state[2]
+        self.vehicle_state.v = req.state[3]
+        self.vehicle_state.steer = req.state[4]
+        print('---------- reset in dwa planner ----------')
+        return True
+
+
+
+    def step_once(self, req):
+        self.config['w_ori'] = req.paras[0]
+        self.move_once(self.grid_map)
+        return DrStepResponse(ob=[self.vehicle_state.x,
+                            self.vehicle_state.y,
+                            self.vehicle_state.yaw,
+                            self.vehicle_state.v,
+                            self.vehicle_state.steer])
 
 
 
@@ -483,4 +513,14 @@ class DWAPlanner(object):
         self.show_trajectory(best_traj, 'rviz_predicted_trajectory', grid_map, 'cube')
         v = best_traj[1].v
         steer = best_traj[1].steer
-        self.move_vehicle(v, steer)
+        res = self.move_vehicle(v, steer)
+        self.vehicle_state.x = res.x
+        self.vehicle_state.y = res.y
+        self.vehicle_state.yaw = res.yaw
+        self.vehicle_state.v = res.v
+        self.vehicle_state.steer = res.steer
+
+        self.print_cnt += 1
+        if self.print_cnt > 10 or True:
+            self.print_cnt = 0
+            print('[dwa] w_ori: {}'.format(self.config['w_ori']))

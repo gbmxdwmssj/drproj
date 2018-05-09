@@ -17,6 +17,7 @@ class VirtualVehicle(object):
         self.model = model
         self.cmd_sub = rospy.Subscriber(cmd_topic_name, AckermannDriveStamped, self.cmd_cb)
         self.cmd_srv = rospy.Service(cmd_srv_name, MoveVehicle, self.move_vehicle)
+        self.reset_srv = rospy.Service('reset_vehicle', ResetVehicle, self.reset_vehicle)
 
 
 
@@ -31,6 +32,17 @@ class VirtualVehicle(object):
         self.step(req.v, req.steer, self.model.config['dt'])
         return MoveVehicleResponse(x=self.state.x, y=self.state.y, yaw=self.state.yaw,
                                 v=req.v, steer=req.steer)
+
+
+
+    def reset_vehicle(self, req):
+        self.state.x = req.state[0]
+        self.state.y = req.state[1]
+        self.state.yaw = req.state[2]
+        self.state.v = req.state[3]
+        self.state.steer = req.state[4]
+        print('---------- reset in virtual vehicle ----------')
+        return True
 
 
 

@@ -18,6 +18,9 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
   FILES
   MoveVehicle.srv
+  DrStep.srv
+  ResetVehicle.srv
+  ResetPlanner.srv
 )
 
 ## Generate added messages and services with any dependencies listed here

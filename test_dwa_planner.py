@@ -11,11 +11,11 @@ import matplotlib.image as mpimg
 
 rospy.init_node('test_dwa_planner', anonymous=True)
 
-empty = mpimg.imread('/home/kai/catkin_ws/src/drproj/empty.png')
-static_grid_map = GridMap(empty, 0.5)
+free = mpimg.imread('/home/kai/catkin_ws/src/drproj/free.png')
+static_grid_map = GridMap(free, 0.5)
 
 vehicle_model = VehicleModel('/home/kai/catkin_ws/src/drproj/vehicle_config.yaml')
-dwa_planner = DWAPlanner(vehicle_model, '/home/kai/catkin_ws/src/drproj/dwa_planner_config.yaml')
+dwa_planner = DWAPlanner(vehicle_model, '/home/kai/catkin_ws/src/drproj/dwa_planner_config.yaml', static_grid_map)
 
 # print('Window: {}'.format(dwa_planner.get_dynamic_window(0.0, 0.0, vehicle_model.config['dt'])))
 
