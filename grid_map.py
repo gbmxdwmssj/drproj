@@ -1,9 +1,9 @@
 import rospy
 import numpy as np
 from nav_msgs.msg import OccupancyGrid
-from colorama import init as clr_ama_init
-from colorama import Fore
-clr_ama_init(autoreset = True)
+# from colorama import init as clr_ama_init
+# from colorama import Fore
+# clr_ama_init(autoreset = True)
 
 class GridMap(object):
     ''' Grid map used for planning.

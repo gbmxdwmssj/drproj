@@ -11,13 +11,14 @@ class VirtualVehicle(object):
 
 
 
-    def __init__(self, state, model, cmd_topic_name, cmd_srv_name):
+    def __init__(self, state, model, cmd_topic_name, cmd_srv_name, is_ros=True):
         # Member
         self.state = state
         self.model = model
-        self.cmd_sub = rospy.Subscriber(cmd_topic_name, AckermannDriveStamped, self.cmd_cb)
-        self.cmd_srv = rospy.Service(cmd_srv_name, MoveVehicle, self.move_vehicle)
-        self.reset_srv = rospy.Service('reset_vehicle', ResetVehicle, self.reset_vehicle)
+        if is_ros:
+            self.cmd_sub = rospy.Subscriber(cmd_topic_name, AckermannDriveStamped, self.cmd_cb)
+            self.cmd_srv = rospy.Service(cmd_srv_name, MoveVehicle, self.move_vehicle)
+            self.reset_srv = rospy.Service('reset_vehicle', ResetVehicle, self.reset_vehicle)
 
 
 
@@ -35,13 +36,23 @@ class VirtualVehicle(object):
 
 
 
+    def reset_vehicle_manually(self, state):
+        self.state.x = state[0]
+        self.state.y = state[1]
+        self.state.yaw = state[2]
+        self.state.v = state[3]
+        self.state.steer = state[4]
+        # print('-------------------- reset in virtual vehicle manually --------------------')
+
+
+
     def reset_vehicle(self, req):
         self.state.x = req.state[0]
         self.state.y = req.state[1]
         self.state.yaw = req.state[2]
         self.state.v = req.state[3]
         self.state.steer = req.state[4]
-        print('---------- reset in virtual vehicle ----------')
+        print('-------------------- reset in virtual vehicle --------------------')
         return True
 
 
@@ -58,6 +69,7 @@ class VirtualVehicle(object):
             dt (float): s.
         '''
         self.state = self.model.step(self.state, v, steer, dt)
+        return self.state
 
 
 

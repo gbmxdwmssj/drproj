@@ -1,4 +1,5 @@
 import rospy
+import time
 import yaml
 import numpy as np
 from math import *
@@ -20,8 +21,9 @@ class DWAPlanner(object):
 
 
 
-    def __init__(self, model, config_file, grid_map):
+    def __init__(self, model, config_file, grid_map, is_ros=True):
         # Member
+        self.is_ros = is_ros
         self.print_cnt = 0
         self.model = model
         self.grid_map = grid_map
@@ -41,23 +43,22 @@ class DWAPlanner(object):
         self.global_path_meter = Path()
         self.mov_id = 0
 
-        # self.vehicle_state_sub = rospy.Subscriber('virtual_vehicle_state', Float64MultiArray, self.vehicle_state_cb)
-        self.global_path_sub = rospy.Subscriber('global_path', Path, self.global_path_cb)
-        self.mov_id_sub = rospy.Subscriber('cur_moving_obs_id', Int64, self.mov_id_cb)
-        self.reset_srv = rospy.Service('reset_planner', ResetPlanner, self.reset_planner)
-        self.reset_vehicle = rospy.ServiceProxy('reset_vehicle', ResetVehicle)
+        if self.is_ros:
+            # self.vehicle_state_sub = rospy.Subscriber('virtual_vehicle_state', Float64MultiArray, self.vehicle_state_cb)
+            self.global_path_sub = rospy.Subscriber('global_path', Path, self.global_path_cb)
+            self.mov_id_sub = rospy.Subscriber('cur_moving_obs_id', Int64, self.mov_id_cb)
+            self.reset_srv = rospy.Service('reset_planner', ResetPlanner, self.reset_planner)
+            self.reset_vehicle = rospy.ServiceProxy('reset_vehicle', ResetVehicle)
+            self.move_vehicle = rospy.ServiceProxy('move_vehicle', MoveVehicle)
+            self.step_srv = rospy.Service('step_once', DrStep, self.step_once)
 
-        self.move_vehicle = rospy.ServiceProxy('move_vehicle', MoveVehicle)
-
-        # Get the initial vehicle state
-        res = self.move_vehicle(0.0, 0.0)
-        self.vehicle_state.x = res.x
-        self.vehicle_state.y = res.y
-        self.vehicle_state.yaw = res.yaw
-        self.vehicle_state.v = res.v
-        self.vehicle_state.steer = res.steer
-
-        self.step_srv = rospy.Service('step_once', DrStep, self.step_once)
+            # Get the initial vehicle state
+            res = self.move_vehicle(0.0, 0.0)
+            self.vehicle_state.x = res.x
+            self.vehicle_state.y = res.y
+            self.vehicle_state.yaw = res.yaw
+            self.vehicle_state.v = res.v
+            self.vehicle_state.steer = res.steer
 
 
 
@@ -85,6 +86,16 @@ class DWAPlanner(object):
 
 
 
+    def reset_planner_manually(self, state):
+        self.vehicle_state.x = state[0]
+        self.vehicle_state.y = state[1]
+        self.vehicle_state.yaw = state[2]
+        self.vehicle_state.v = state[3]
+        self.vehicle_state.steer = state[4]
+        # print('-------------------- reset in dwa planner manually --------------------')
+
+
+
     def reset_planner(self, req):
         self.reset_vehicle(state=req.state)
         self.vehicle_state.x = req.state[0]
@@ -92,7 +103,7 @@ class DWAPlanner(object):
         self.vehicle_state.yaw = req.state[2]
         self.vehicle_state.v = req.state[3]
         self.vehicle_state.steer = req.state[4]
-        print('---------- reset in dwa planner ----------')
+        print('-------------------- reset in dwa planner --------------------')
         return True
 
 
@@ -507,6 +518,8 @@ class DWAPlanner(object):
 
 
     def move_once(self, grid_map):
+        start_time = time.clock()
+
         goal = self.get_prospect()
         traj_cluster = self.get_trajectory_cluster(self.vehicle_state, self.model.config['dt'])
         best_traj = self.get_best_trajectory(traj_cluster, goal, grid_map)
@@ -524,3 +537,6 @@ class DWAPlanner(object):
         if self.print_cnt > 10 or True:
             self.print_cnt = 0
             print('[dwa] w_ori: {}'.format(self.config['w_ori']))
+
+        end_time = time.clock()
+        # print('[dwa] time elapsed in move_once: {}ms'.format(int((end_time - start_time) * 1000)))
