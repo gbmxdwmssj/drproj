@@ -482,8 +482,16 @@ class DWAPlanner(object):
         normed_ori_costs = self.normalize_costs(self.orientation_costs(traj_cluster, goal))
         normed_dis_costs = self.normalize_costs(self.distance_costs(traj_cluster, goal))
         normed_vel_costs = self.normalize_costs(self.velocity_costs(traj_cluster))
-        normed_col_costs = self.normalize_costs(self.collision_costs(traj_cluster, grid_map))
-        normed_mov_costs = self.normalize_costs(self.moving_collision_costs(traj_cluster))
+
+        if self.config['w_col'] == 0.0:
+            normed_col_costs = 0.0
+        else:
+            normed_col_costs = self.normalize_costs(self.collision_costs(traj_cluster, grid_map))
+
+        if self.config['w_mov'] == 0.0:
+            normed_mov_costs = 0.0
+        else:
+            normed_mov_costs = self.normalize_costs(self.moving_collision_costs(traj_cluster))
 
         weighted_ori_costs = np.multiply(self.config['w_ori'], normed_ori_costs)
         weighted_dis_costs = np.multiply(self.config['w_dis'], normed_dis_costs)
