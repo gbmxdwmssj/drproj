@@ -122,6 +122,7 @@ class DWAPlanner(object):
     def get_prospect(self):
         # Check
         if len(self.global_path_meter.poses) == 0:
+            print('[dwa] There is no global path.')
             return (self.vehicle_state.x, self.vehicle_state.y)
 
         # Match
@@ -140,6 +141,7 @@ class DWAPlanner(object):
         prospect_id = min(prospect_id, len(self.global_path_meter.poses)-1)
         prospect_x = self.global_path_meter.poses[prospect_id].pose.position.x
         prospect_y = self.global_path_meter.poses[prospect_id].pose.position.y
+        # print('[dwa] Prospect: {}'.format((prospect_x, prospect_y)))
         return (prospect_x, prospect_y)
 
 
@@ -266,6 +268,7 @@ class DWAPlanner(object):
         traj_cluster = []
 
         dw = self.get_dynamic_window(state.v, state.steer, dt)
+        # print('[dwa] Dynamic window: {}'.format(dw))
         for iv in np.arange(dw[0], dw[1]+self.small_num, self.config['v_resolution']):
             for isteer in np.arange(dw[2], dw[3]+self.small_num, self.config['steer_resolution']):
                 traj = self.get_trajectory(state, iv, isteer, dt, self.config['predict_time'])
@@ -530,6 +533,7 @@ class DWAPlanner(object):
 
         goal = self.get_prospect()
         traj_cluster = self.get_trajectory_cluster(self.vehicle_state, self.model.config['dt'])
+        self.show_trajectory_cluster(traj_cluster, 'rviz_trajectory_cluster', grid_map)
         best_traj = self.get_best_trajectory(traj_cluster, goal, grid_map)
         self.show_trajectory(best_traj, 'rviz_predicted_trajectory', grid_map, 'cube')
         v = best_traj[1].v

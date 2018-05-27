@@ -6,4 +6,4 @@ w_dis: 1.0
 w_vel: 0.0
 w_col: 0.0
 w_mov: 0.0
-prospect_dis: 5.0 # m
+prospect_dis: 1.0 # m
