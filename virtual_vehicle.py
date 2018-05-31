@@ -30,7 +30,8 @@ class VirtualVehicle(object):
 
 
     def move_vehicle(self, req):
-        self.step(req.v, req.steer, self.model.config['dt'])
+        for _ in range(3):
+            self.step(req.v, req.steer, self.model.config['dt'])
         return MoveVehicleResponse(x=self.state.x, y=self.state.y, yaw=self.state.yaw,
                                 v=req.v, steer=req.steer)
 
