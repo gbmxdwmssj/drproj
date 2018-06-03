@@ -110,6 +110,7 @@ class DWAPlanner(object):
 
     def step_once(self, req):
         self.config['w_ori'] = req.paras[0]
+        self.config['prospect_dis'] = req.paras[1]
         self.move_once(self.grid_map)
         return DrStepResponse(ob=[self.vehicle_state.x,
                             self.vehicle_state.y,
@@ -548,7 +549,8 @@ class DWAPlanner(object):
         self.print_cnt += 1
         if self.print_cnt > 10 or True:
             self.print_cnt = 0
-            print('[dwa] w_ori: {}'.format(self.config['w_ori']))
+            # print('[dwa] w_ori: {}'.format(self.config['w_ori']))
+            print('[dwa] prosp: {}'.format(self.config['prospect_dis']))
 
         end_time = time.clock()
         # print('[dwa] time elapsed in move_once: {}ms'.format(int((end_time - start_time) * 1000)))
