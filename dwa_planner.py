@@ -550,7 +550,8 @@ class DWAPlanner(object):
         if self.print_cnt > 10 or True:
             self.print_cnt = 0
             # print('[dwa] w_ori: {}'.format(self.config['w_ori']))
-            print('[dwa] prosp: {}'.format(self.config['prospect_dis']))
+            # print('[dwa] prosp: {}'.format(self.config['prospect_dis']))
+            print('[dwa] w_ori: {:.3f}\tprosp: {:.3f}'.format(self.config['w_ori'], self.config['prospect_dis']))
 
         end_time = time.clock()
         # print('[dwa] time elapsed in move_once: {}ms'.format(int((end_time - start_time) * 1000)))
