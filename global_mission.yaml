@@ -1,4 +1,4 @@
 # start: [8.0, 7.0, 0.0] # [m, m, degree]
 # goal: [7.0, 0.0] # [m, m]
-start: [5.0, 9.5, 0.0] # [m, m, degree]
-goal: [5.0, 0.0] # [m, m]
+start: [0.5, 9.0, 90.0] # [m, m, degree]
+goal: [0.5, 1.0] # [m, m]

@@ -1,9 +1,9 @@
-v_resolution: 0.2 # m/s
-steer_resolution: 3.6 # degree
+v_resolution: 0.4 # m/s
+steer_resolution: 7.0 # degree
 predict_time: 2.0 # s
-w_ori: 0.0
-w_dis: 1.0
+w_ori: 0.07
+w_dis: 0.3
 w_vel: 0.0
-w_col: 1.0
-w_mov: 0.0
-prospect_dis: 0.0 # m
+w_col: 0.0
+w_mov: 1.0
+prospect_dis: 1.5 # m

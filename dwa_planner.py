@@ -408,6 +408,8 @@ class DWAPlanner(object):
 
     def half_collision(self, grid, grid_map, radius):
         radius_in_grid = int(ceil(radius / grid_map.resolution))
+        # Trick
+        radius_in_grid += 1
         for dx in range(-radius_in_grid, radius_in_grid+1):
             for dy in range(-radius_in_grid, radius_in_grid+1):
                 ddis_in_grid = dx**2 + dy**2

@@ -29,14 +29,15 @@ virtual_vehicle.show('rviz_virtual_vehicle', moving_obs.grid_map)
 moving_obs.grid_map.show('rviz_global_grid_map')
 rospy.set_param('start_signal', False)
 start_signal = rospy.get_param('/start_signal')
+r = rospy.Rate(10) # 10hz
 while not start_signal and not rospy.core.is_shutdown():
-    time.sleep(0.1)
+    r.sleep()
     start_signal = rospy.get_param('/start_signal')
     virtual_vehicle.show('rviz_virtual_vehicle', moving_obs.grid_map)
     virtual_vehicle.pub_vehicle_state('virtual_vehicle_state')
 
 while not rospy.core.is_shutdown():
-    time.sleep(0.1)
+    r.sleep()
     virtual_vehicle.show('rviz_virtual_vehicle', moving_obs.grid_map)
     virtual_vehicle.pub_vehicle_state('virtual_vehicle_state')
     moving_obs.run_once()

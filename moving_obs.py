@@ -10,7 +10,7 @@ class MovingObs(object):
 
 
 
-    def __init__(self, config_file, map_config_file, map_file, is_clear=False, is_pub_id=True, resolution=0.5):
+    def __init__(self, config_file, map_config_file, map_file, is_clear=False, is_pub_id=True, resolution=0.1):
         # Member
         f = open(config_file)
         self.config = yaml.load(f)
@@ -91,6 +91,8 @@ class MovingObs(object):
 
     def refine(self):
         self.trajs = []
+        if self.config is None:
+            return
         for key in self.config:
             self.trajs.append(self.interpolate_multi_pts(self.config[key]))
 
